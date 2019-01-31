@@ -2,9 +2,19 @@ import os
 import psycopg2
 
 
-def create():
+def connect():
     DATABASE_URL = os.environ['DATABASE_URL']
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    print(f'Database URL is: {DATABASE_URL}')
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        return conn
+    except:
+        print(f'Failed to connect to Postgres at URL: {DATABASE_URL}')
+        return None
+
+
+def create():
+    conn = connect()
     c = conn.cursor()
     try:
         c.execute('CREATE TABLE players (discord_id TEXT PRIMARY KEY, discord_name TEXT, data TEXT, remarks TEXT)')
@@ -12,14 +22,13 @@ def create():
         txt = 'Database initialized'
     except:
         txt = 'Failed to create table'
+        print(txt)
     conn.close()
-
     return txt
 
 
 def read(discord_id: str):
-    DATABASE_URL = os.environ['DATABASE_URL']
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    conn = connect()
     c = conn.cursor()
     try:
         sql_query = "SELECT * FROM players WHERE discord_id=?"
@@ -30,37 +39,35 @@ def read(discord_id: str):
             txt += '{}\n'.format(row)
     except:
         txt = 'Failed to read table'
+        print(txt)
     conn.close()
     return txt
 
 
 def insert(author_id, author_name, txt):
-    DATABASE_URL = os.environ['DATABASE_URL']
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    conn = connect()
     c = conn.cursor()
     try:
         c.execute('INSERT INTO players VALUES ("{}", "{}", "{}", "{}")'.format(author_id, author_name, txt, ''))
         conn.commit()
         txt = 'Row inserted: "{}", "{}", "{}"'.format(author_id, author_name, txt)
     except:
-        txt = 'Failed to insert data'
+        txt = 'Failed to insert row'
+        print(txt)
     conn.close()
-
     return txt
 
 
 def sql(cmd):
-    DATABASE_URL = os.environ['DATABASE_URL']
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    conn = connect()
     c = conn.cursor()
     try:
         c.execute(cmd)
         conn.commit()
         txt = 'Database initialized'
     except:
-        txt = 'Failed to create table'
+        txt = 'Failed to execute SQL query "{}"'.format(cmd)
+        print(txt)
     conn.close()
-
     return txt
-
 
