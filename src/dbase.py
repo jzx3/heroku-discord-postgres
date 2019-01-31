@@ -3,8 +3,13 @@ import psycopg2
 
 
 def connect():
-    DATABASE_URL = os.environ['DATABASE_URL']
-    print(f'Database URL is: {DATABASE_URL}')
+    try:
+        DATABASE_URL = os.environ['DATABASE_URL']
+        print(f'Database URL is: {DATABASE_URL}')
+    except:
+        print('DATABASE_URL is not defined')
+        return None
+
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         return conn
