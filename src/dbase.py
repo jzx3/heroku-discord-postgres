@@ -26,7 +26,7 @@ def create():
     conn = connect()
     c = conn.cursor()
     try:
-        c.execute('CREATE TABLE players (discord_id TEXT PRIMARY KEY, discord_name TEXT, data TEXT, remarks TEXT)')
+        c.execute('CREATE TABLE players (discord_id TEXT PRIMARY KEY, discord_name TEXT, data TEXT, remarks TEXT);')
         conn.commit()
         txt = 'Database table created'
     except:
@@ -40,7 +40,7 @@ def read():
     conn = connect()
     c = conn.cursor()
     try:
-        sql_query = "SELECT * FROM players"
+        sql_query = "SELECT * FROM players;"
         c.execute(sql_query)
         rows = c.fetchall()
         txt = ''
@@ -57,7 +57,7 @@ def getrow(discord_id):
     conn = connect()
     c = conn.cursor()
     try:
-        sql_query = "SELECT * FROM players WHERE discord_id=?"
+        sql_query = "SELECT * FROM players WHERE discord_id=?;"
         c.execute(sql_query, (discord_id,))
         rows = c.fetchall()
         txt = ''
@@ -74,7 +74,7 @@ def insert(author_id, author_name, txt):
     conn = connect()
     c = conn.cursor()
     try:
-        c.execute('INSERT INTO players VALUES ("{}", "{}", "{}", "{}")'.format(author_id, author_name, txt, 'Remarks'))
+        c.execute('INSERT INTO players VALUES ("{}", "{}", "{}", "{}");'.format(author_id, author_name, txt, 'Remarks'))
         conn.commit()
         txt = 'Row inserted: "{}", "{}", "{}"'.format(author_id, author_name, txt)
     except:
