@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from discord.ext import commands
+import dbase as db
 import discord
 import logging
 import os
@@ -53,7 +54,6 @@ async def shell(ctx, *, cmd):
 
 
 @bot.command(brief='About this bot')
-@commands.is_owner()
 async def about(ctx):
     """Gives a description for this bot"""
     txt = (
@@ -63,7 +63,40 @@ async def about(ctx):
         "<https://github.com/jzx3/heroku-discord-template>")
     await ctx.send(txt)
 
-    
+
+# ----- Bot Database Commands -------------------------------------------------
+@bot.command(brief='Create table')
+@commands.is_owner()
+async def db_create(ctx):
+    """Create the initial table for the database"""
+    txt = db.create()
+    await ctx.send(txt)
+
+
+@bot.command(brief='Read table')
+@commands.is_owner()
+async def db_read(ctx, *, cmd):
+    """Read a row of the table corresponding to your Discord ID"""
+    txt = db.read(ctx.author.id)
+    await ctx.send(txt)
+
+
+@bot.command(brief='Insert data into table')
+@commands.is_owner()
+async def db_insert(ctx, *, txt):
+    """Insert data into the table"""
+    txt = db.insert(ctx.author.id, ctx.author.name, txt)
+    await ctx.send(txt)
+
+
+@bot.command(brief='Run sql query')
+@commands.is_owner()
+async def sql(ctx, *, cmd):
+    """Run a custom sql query"""
+    txt = db.sql(cmd)
+    await ctx.send(txt)
+
+
 # ----- Run the Bot -----------------------------------------------------------
 if __name__ == '__main__':
     token = str(os.environ.get('DISCORD_BOT_TOKEN'))
