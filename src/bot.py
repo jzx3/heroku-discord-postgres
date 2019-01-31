@@ -75,9 +75,17 @@ async def db_create(ctx):
 
 @bot.command(brief='Read table')
 @commands.is_owner()
-async def db_read(ctx, *, cmd):
+async def db_read(ctx):
+    """Read the table"""
+    txt = db.read()
+    await ctx.send(txt)
+
+
+@bot.command(brief='Read row of table')
+@commands.is_owner()
+async def db_getrow(ctx):
     """Read a row of the table corresponding to your Discord ID"""
-    txt = db.read(ctx.author.id)
+    txt = db.getrow(ctx.author.id)
     await ctx.send(txt)
 
 
