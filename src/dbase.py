@@ -28,6 +28,7 @@ class HerokuDB():
             return
 
         try:
+            # self._conn = await asyncpg.connect(self._url, sslmode='require')
             self._conn = psycopg2.connect(self._url, sslmode='require')
         except:
             print(f'Failed to connect to Postgres at URL: {self._url}')
@@ -77,11 +78,12 @@ class HerokuDB():
 
 
     def read(self):
-        c = self._conn.cursor()
         try:
             sql_query = "SELECT * FROM players;"
-            c.execute(sql_query)
-            rows = c.fetchall()
+            # rows = await conn.fetch(sql_query)
+            with self._conn.cursor() as c:
+                c.execute(sql_query)
+                rows = c.fetchall()
         except:
             txt = 'Failed to read table'
             print(txt)
@@ -92,11 +94,11 @@ class HerokuDB():
 
 
     def getrow(self, discord_id):
-        c = self._conn.cursor()
         try:
             sql_query = "SELECT * FROM players WHERE discord_id=?;"
-            c.execute(sql_query, (discord_id,))
-            rows = c.fetchall()
+            with self._conn.cursor() as c:
+                c.execute(sql_query, (discord_id,))
+                rows = c.fetchall()
         except:
             txt = 'Failed to read row'
             print(txt)
@@ -105,10 +107,10 @@ class HerokuDB():
 
 
     def insert(self, author_id, author_name, txt):
-        c = self._conn.cursor()
         try:
-            c.execute('INSERT INTO players VALUES ("{}", "{}", "{}", "{}");'.format(author_id, author_name, txt, 'Remarks'))
-            self._conn.commit()
+            with self._conn.cursor() as c:
+                c.execute('INSERT INTO players VALUES ("{}", "{}", "{}", "{}");'.format(author_id, author_name, txt, 'Remarks'))
+                self._conn.commit()
             txt = f'Row inserted: "{author_id}", "{author_name}", "{txt}"'
         except:
             txt = 'Failed to insert row'
@@ -117,10 +119,10 @@ class HerokuDB():
 
 
     def sql(self, cmd):
-        c = self._conn.cursor()
         try:
-            c.execute(cmd)
-            self._conn.commit()
+            with self._conn.cursor() as c:
+                c.execute(cmd)
+                self._conn.commit()
             txt = f'Executed SQL command: "{cmd}"'
         except:
             txt = f'Failed to execute SQL command "{cmd}"'
