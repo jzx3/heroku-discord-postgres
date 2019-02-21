@@ -78,14 +78,18 @@ class HerokuDB():
 
 
     def read(self):
+        sql_query = "SELECT * FROM players;"
         try:
-            sql_query = "SELECT * FROM players;"
             # rows = await conn.fetch(sql_query)
             with self._conn.cursor() as c:
                 c.execute(sql_query)
                 rows = c.fetchall()
-        except:
-            txt = 'Failed to read table'
+        except psycopg2.Error as e:
+            txt = 'Failed to read table\n'
+            txt += f'Code: {e.pgcode}\n'
+            txt += f'Error: {e.pgerror}\n'
+            txt += f'Severity: {e.diag.severity}\n'
+            txt += f'Message: {e.diag.message_primary}'
             print(txt)
             return txt
 
@@ -109,11 +113,17 @@ class HerokuDB():
     def insert(self, author_id, author_name, txt):
         try:
             with self._conn.cursor() as c:
-                c.execute('INSERT INTO players VALUES ("{}", "{}", "{}", "{}");'.format(author_id, author_name, txt, 'Remarks'))
+                # c.execute('INSERT INTO players VALUES ("{}", "{}", "{}", "{}");'.format(author_id, author_name, txt, 'Remarks'))
+                c.execute('INSERT INTO players (discord_id, discord_name, data, remarks) VALUES (%s, %s, %s, %s)',
+                    (author_id, author_name, txt, 'Remarks'))
                 self._conn.commit()
-            txt = f'Row inserted: "{author_id}", "{author_name}", "{txt}"'
-        except:
-            txt = 'Failed to insert row'
+            txt = f'Row inserted: "{author_id}", "{author_name}", "{txt}", "Remarks"'
+        except psycopg2.Error as e:
+            txt = 'Failed to insert row\n'
+            txt += f'Code: {e.pgcode}\n'
+            txt += f'Error: {e.pgerror}\n'
+            txt += f'Severity: {e.diag.severity}\n'
+            txt += f'Message: {e.diag.message_primary}'
             print(txt)
         return txt
 
