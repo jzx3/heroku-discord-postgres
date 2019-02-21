@@ -125,3 +125,4 @@ async def sql(ctx, *, cmd):
 if __name__ == '__main__':
     token = str(os.environ.get('DISCORD_BOT_TOKEN'))
     bot.run(token)
+    HD.close()

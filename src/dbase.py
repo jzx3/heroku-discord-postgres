@@ -45,11 +45,16 @@ class HerokuDB():
             print(txt)
             return txt
         else:
-            return 'Database is connected'
+            return f'Database is connected at {self._url}. Connection is {self._conn}'
 
 
-    def create(self):            
-        c = self._conn.cursor()
+    def create(self):
+        try:
+            c = self._conn.cursor()
+        except:
+            txt = 'Could not get cursor'
+            print(txt)
+            return txt
         try:
             c.execute('CREATE TABLE players (discord_id TEXT PRIMARY KEY, discord_name TEXT, data TEXT, remarks TEXT);')
             self._conn.commit()
@@ -60,7 +65,7 @@ class HerokuDB():
         return txt
 
 
-    def close():
+    def close(self):
         try:
             self._conn.close()
             txt = 'Database connection closed'
@@ -116,8 +121,8 @@ class HerokuDB():
         try:
             c.execute(cmd)
             self._conn.commit()
-            txt = 'Database initialized'
+            txt = f'Executed SQL command: "{cmd}"'
         except:
-            txt = 'Failed to execute SQL query "{}"'.format(cmd)
-            print(txt)
+            txt = f'Failed to execute SQL command "{cmd}"'
+        print(txt)
         return txt
