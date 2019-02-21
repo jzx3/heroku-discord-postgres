@@ -13,7 +13,6 @@ sys.path.insert(0, 'src/')
 import dbase as db
 import utility
 
-BOT_PREFIX=','
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,9 +20,13 @@ logging.basicConfig(
     datefmt = "%Y%m%d %H:%M:%S",
     format = "{asctime} [{levelname:<8}] {name}: {message}")
 
+if BOT_PREFIX in os.environ:
+    BOT_PREFIX = str(os.environ.get('BOT_PREFIX'))
+else:
+    BOT_PREFIX=','
+
 bot = commands.Bot(command_prefix=BOT_PREFIX,
                    description='Heroku Discord Bot Example')
-
 setattr(bot, "logger", logging.getLogger("bot.py"))
 
 
