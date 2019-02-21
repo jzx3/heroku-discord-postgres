@@ -4,13 +4,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from discord.ext import commands
-import dbase as db
 import discord
 import logging
 import os
 import sys
 
 sys.path.insert(0, 'src/')
+import dbase as db
 import utility
 
 logging.basicConfig(
@@ -19,7 +19,7 @@ logging.basicConfig(
     datefmt = "%Y%m%d %H:%M:%S",
     format = "{asctime} [{levelname:<8}] {name}: {message}")
 
-bot = commands.Bot(command_prefix=';',
+bot = commands.Bot(command_prefix=',',
                    description='Heroku Discord Bot Example')
 
 setattr(bot, "logger", logging.getLogger("bot.py"))
