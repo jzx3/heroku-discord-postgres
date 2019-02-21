@@ -6,7 +6,7 @@ def url():
     return os.environ['DATABASE_URL']
 
 
-def rows_to_text(rows);
+def rows_to_text(rows):
     for i, row in enumerate(rows):
         if i == 0:
             txt = f'{i}: {row}'
