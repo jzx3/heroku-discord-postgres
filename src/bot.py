@@ -20,7 +20,7 @@ logging.basicConfig(
     datefmt = "%Y%m%d %H:%M:%S",
     format = "{asctime} [{levelname:<8}] {name}: {message}")
 
-if BOT_PREFIX in os.environ:
+if 'BOT_PREFIX' in os.environ:
     BOT_PREFIX = str(os.environ.get('BOT_PREFIX'))
 else:
     BOT_PREFIX=','
