@@ -13,13 +13,15 @@ sys.path.insert(0, 'src/')
 import dbase as db
 import utility
 
+BOT_PREFIX=','
+
 logging.basicConfig(
     level=logging.INFO,
     style = '{',
     datefmt = "%Y%m%d %H:%M:%S",
     format = "{asctime} [{levelname:<8}] {name}: {message}")
 
-bot = commands.Bot(command_prefix=',',
+bot = commands.Bot(command_prefix=BOT_PREFIX,
                    description='Heroku Discord Bot Example')
 
 setattr(bot, "logger", logging.getLogger("bot.py"))
@@ -28,8 +30,8 @@ setattr(bot, "logger", logging.getLogger("bot.py"))
 # ----- Bot Events ------------------------------------------------------------
 @bot.event
 async def on_ready():
-    print('Bot logged in as {} (id={})'.format(
-        bot.user.name, bot.user.id))
+    print(f'Bot logged in as {bot.user.name} (id={bot.user.id})')
+    print(f'Bot prefix is {BOT_PREFIX}')
 
 
 @bot.event
