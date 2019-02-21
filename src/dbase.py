@@ -15,7 +15,7 @@ def rows_to_text(rows):
     return txt
 
 
-class HerokuDB(self):
+class HerokuDB():
     """Class for a Heroku Database"""
     
     def __init__(self):
