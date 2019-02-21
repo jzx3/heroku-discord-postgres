@@ -29,6 +29,9 @@ bot = commands.Bot(command_prefix=BOT_PREFIX,
                    description='Heroku Discord Bot Example')
 setattr(bot, "logger", logging.getLogger("bot.py"))
 
+print('Connecting to database')
+HD = db.HerokuDB()
+
 
 # ----- Bot Events ------------------------------------------------------------
 @bot.event
@@ -74,7 +77,15 @@ async def about(ctx):
 @commands.is_owner()
 async def db_create(ctx):
     """Create the initial table for the database"""
-    txt = db.create()
+    txt = HD.create()
+    await ctx.send(txt)
+
+
+@bot.command(brief='Check table')
+@commands.is_owner()
+async def db_check(ctx):
+    """Check the connection to the database"""
+    txt = HD.check_connection()
     await ctx.send(txt)
 
 
@@ -82,7 +93,7 @@ async def db_create(ctx):
 @commands.is_owner()
 async def db_read(ctx):
     """Read the table"""
-    txt = db.read()
+    txt = HD.read()
     await ctx.send(txt)
 
 
@@ -90,7 +101,7 @@ async def db_read(ctx):
 @commands.is_owner()
 async def db_getrow(ctx):
     """Read a row of the table corresponding to your Discord ID"""
-    txt = db.getrow(ctx.author.id)
+    txt = HD.getrow(ctx.author.id)
     await ctx.send(txt)
 
 
@@ -98,7 +109,7 @@ async def db_getrow(ctx):
 @commands.is_owner()
 async def db_insert(ctx, *, txt):
     """Insert data into the table"""
-    txt = db.insert(ctx.author.id, ctx.author.name, txt)
+    txt = HD.insert(ctx.author.id, ctx.author.name, txt)
     await ctx.send(txt)
 
 
@@ -106,7 +117,7 @@ async def db_insert(ctx, *, txt):
 @commands.is_owner()
 async def sql(ctx, *, cmd):
     """Run a custom sql query"""
-    txt = db.sql(cmd)
+    txt = HD.sql(cmd)
     await ctx.send(txt)
 
 
