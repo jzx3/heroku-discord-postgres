@@ -81,7 +81,7 @@ class HerokuDB():
             return None, txt, e
 
 
-   def commit(self, sql_query, my_tuple=None):
+    def commit(self, sql_query, my_tuple=None):
         try:
             with self._conn.cursor() as c:
                 txt = f'Successful execute+commit of "{sql_query}", {my_tuple}'
