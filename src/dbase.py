@@ -15,6 +15,16 @@ def rows_to_text(rows):
     return txt
 
 
+def error_to_text(header, e):
+    txt = header
+    txt += f'Code: {e.pgcode}\n'
+    txt += f'Error: {e.pgerror}\n'
+    txt += f'Severity: {e.diag.severity}\n'
+    txt += f'Message: {e.diag.message_primary}'
+    print(txt)
+    return txt
+
+
 class HerokuDB():
     """Class for a Heroku Database"""
     
@@ -46,51 +56,50 @@ class HerokuDB():
             print(txt)
             return txt
         else:
+            print(dir(self._conn))
             return f'Database is connected at {self._url}. Connection is {self._conn}'
 
 
     def create(self):
+        c = self._conn.cursor()
         try:
-            c = self._conn.cursor()
-        except:
-            txt = 'Could not get cursor'
-            print(txt)
-            return txt
-        try:
-            c.execute('CREATE TABLE players (discord_id TEXT PRIMARY KEY, discord_name TEXT, data TEXT, remarks TEXT);')
+            c.execute('CREATE TABLE players (discord_id TEXT PRIMARY KEY, server_id TEXT, discord_name TEXT, ign TEXT, local_data TEXT, global_data TEXT);')
             self._conn.commit()
             txt = 'Database table created'
-        except:
-            txt = 'Failed to create table'
-            print(txt)
+        except psycopg2.Error as e:
+            txt = error_to_text('Failed to create table\n', e)
         return txt
 
+
+    def drop(self):
+        c = self._conn.cursor()
+        try:
+            c.execute('DROP TABLE IF EXISTS players;')
+            self._conn.commit()
+            txt = 'Database table deleted'
+        except psycopg2.Error as e:
+            txt = error_to_text('Failed to delete table\n', e)
+        return txt
+    
 
     def close(self):
         try:
             self._conn.close()
             txt = 'Database connection closed'
             self._conn = None
-        except:
-            txt = 'Failed to close database connection'
-            print(txt)
+        except psycopg2.Error as e:
+            txt = error_to_text('Failed to close database connection\n', e)
         return txt
 
 
     def read(self):
         sql_query = "SELECT * FROM players;"
         try:
-            # rows = await conn.fetch(sql_query)
             with self._conn.cursor() as c:
                 c.execute(sql_query)
                 rows = c.fetchall()
         except psycopg2.Error as e:
-            txt = 'Failed to read table\n'
-            txt += f'Code: {e.pgcode}\n'
-            txt += f'Error: {e.pgerror}\n'
-            txt += f'Severity: {e.diag.severity}\n'
-            txt += f'Message: {e.diag.message_primary}'
-            print(txt)
+            txt = error_to_text('Failed to read table\n', e)
             return txt
 
         print(f'{len(rows)} rows retrieved')
@@ -103,28 +112,45 @@ class HerokuDB():
             with self._conn.cursor() as c:
                 c.execute(sql_query, (discord_id,))
                 rows = c.fetchall()
-        except:
-            txt = 'Failed to read row'
-            print(txt)
+        except psycopg2.Error as e:
+            txt = error_to_text('Failed to read row\n', e)
             return txt
         return rows_to_text(rows)
+
+
+    def insert_ign(self, author_id, author_name, ign):
+        try:
+            with self._conn.cursor() as c:
+                c.execute('INSERT INTO players (discord_id, server_id, discord_name, ign) VALUES (%s, %s, %s, %s)',
+                    (author_id, server_id, author_name, ign))
+                self._conn.commit()
+            txt = f'Row inserted: "{author_id}", "{server_id}", "{author_name}": ign="{ign}"'
+        except psycopg2.Error as e:
+            txt = error_to_text('Failed to insert row\n', e)
+        return txt
+
+
+    def insert_local(self, author_id, author_name, txt):
+        try:
+            with self._conn.cursor() as c:
+                c.execute('INSERT INTO players (discord_id, server_id, discord_name, local_data) VALUES (%s, %s, %s, %s)',
+                    (author_id, server_id, author_name, txt))
+                self._conn.commit()
+            txt = f'Row inserted: "{author_id}", "{server_id}", "{author_name}": local_data="{txt}"'
+        except psycopg2.Error as e:
+            txt = error_to_text('Failed to insert row\n', e)
+        return txt
 
 
     def insert(self, author_id, author_name, txt):
         try:
             with self._conn.cursor() as c:
-                # c.execute('INSERT INTO players VALUES ("{}", "{}", "{}", "{}");'.format(author_id, author_name, txt, 'Remarks'))
-                c.execute('INSERT INTO players (discord_id, discord_name, data, remarks) VALUES (%s, %s, %s, %s)',
-                    (author_id, author_name, txt, 'Remarks'))
+                c.execute('INSERT INTO players (discord_id, server_id, discord_name, global_data) VALUES (%s, %s, %s, %s)',
+                    (author_id, server_id, author_name, txt))
                 self._conn.commit()
-            txt = f'Row inserted: "{author_id}", "{author_name}", "{txt}", "Remarks"'
+            txt = f'Row inserted: "{author_id}", "{server_id}", "{author_name}": global_data="{txt}"'
         except psycopg2.Error as e:
-            txt = 'Failed to insert row\n'
-            txt += f'Code: {e.pgcode}\n'
-            txt += f'Error: {e.pgerror}\n'
-            txt += f'Severity: {e.diag.severity}\n'
-            txt += f'Message: {e.diag.message_primary}'
-            print(txt)
+            txt = error_to_text('Failed to insert row\n', e)
         return txt
 
 
