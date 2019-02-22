@@ -9,9 +9,9 @@ def url():
 def rows_to_text(rows):
     for i, row in enumerate(rows):
         if i == 0:
-            txt = f'{i}: {row}'
+            txt = f'{i+1}: {row}'
         else:
-            txt += f'\n{i}: {row}'
+            txt += f'\n{i+1}: {row}'
     return txt
 
 
@@ -118,37 +118,50 @@ class HerokuDB():
         return rows_to_text(rows)
 
 
-    def insert_ign(self, author_id, author_name, ign):
+    def set_home_discord(self, author_id, server_id, author_name):
         try:
             with self._conn.cursor() as c:
-                c.execute('INSERT INTO players (discord_id, server_id, discord_name, ign) VALUES (%s, %s, %s, %s)',
-                    (author_id, server_id, author_name, ign))
+                c.execute('INSERT INTO players (discord_id, server_id, discord_name) VALUES (%s, %s, %s, %s) ON DUPLICATE KEY UPDATE server_id = VALUES(%s)',
+                    (author_id, server_id, author_name, server_id))
                 self._conn.commit()
-            txt = f'Row inserted: "{author_id}", "{server_id}", "{author_name}": ign="{ign}"'
+            txt = f'Set ign: "{author_id}", "{server_id}", "{author_name}": ign="{ign}"'
         except psycopg2.Error as e:
             txt = error_to_text('Failed to insert row\n', e)
         return txt
 
 
-    def insert_local(self, author_id, author_name, txt):
+    def insert_ign(self, author_id, server_id, author_name, ign):
         try:
             with self._conn.cursor() as c:
-                c.execute('INSERT INTO players (discord_id, server_id, discord_name, local_data) VALUES (%s, %s, %s, %s)',
-                    (author_id, server_id, author_name, txt))
+                c.execute('INSERT INTO players (discord_id, discord_name, ign) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE ign = VALUES(%s)',
+                    (author_id, server_id, author_name, ign, ign))
                 self._conn.commit()
-            txt = f'Row inserted: "{author_id}", "{server_id}", "{author_name}": local_data="{txt}"'
+            txt = f'Set ign: "{author_id}", "{server_id}", "{author_name}": ign="{ign}"'
         except psycopg2.Error as e:
             txt = error_to_text('Failed to insert row\n', e)
         return txt
 
 
-    def insert(self, author_id, author_name, txt):
+    def insert_local(self, author_id, server_id, author_name, txt):
+        # To do: local data can only be done on home discord
         try:
             with self._conn.cursor() as c:
-                c.execute('INSERT INTO players (discord_id, server_id, discord_name, global_data) VALUES (%s, %s, %s, %s)',
-                    (author_id, server_id, author_name, txt))
+                c.execute('INSERT INTO players (discord_id, discord_name, local_data) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE discord_name = VALUES(%s), local_data = VALUES(%s)',
+                    (author_id, author_name, txt, author_name, txt))
                 self._conn.commit()
-            txt = f'Row inserted: "{author_id}", "{server_id}", "{author_name}": global_data="{txt}"'
+            txt = f'Set local_data: "{author_id}", "{server_id}", "{author_name}": local_data="{txt}"'
+        except psycopg2.Error as e:
+            txt = error_to_text('Failed to insert row\n', e)
+        return txt
+
+
+    def insert_global(self, author_id, server_id, author_name, txt):
+        try:
+            with self._conn.cursor() as c:
+                c.execute('INSERT INTO players (discord_id, discord_name, global_data) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE discord_name = VALUES(%s), global_data = VALUES(%s)',
+                    (author_id, server_id, author_name, txt, author_name, txt))
+                self._conn.commit()
+            txt = f'Set global_data: "{author_id}", "{server_id}", "{author_name}": global_data="{txt}"'
         except psycopg2.Error as e:
             txt = error_to_text('Failed to insert row\n', e)
         return txt

@@ -97,19 +97,38 @@ async def db_read(ctx):
     await ctx.send(txt)
 
 
-@bot.command(brief='Read row of table')
-@commands.is_owner()
+@bot.command(brief='Read database entry')
 async def db_getrow(ctx):
     """Read a row of the table corresponding to your Discord ID"""
     txt = HD.getrow(ctx.author.id)
     await ctx.send(txt)
 
 
-@bot.command(brief='Insert data into table')
-@commands.is_owner()
-async def db_insert(ctx, *, txt):
-    """Insert data into the table"""
-    txt = HD.insert(ctx.author.id, ctx.author.name, txt)
+@bot.command(brief='Set your home Discord')
+async def home_discord(ctx, *):
+    """Sets your home discord"""
+    txt = HD.set_home_discord(ctx.author.id, ctx.server.id, ctx.author.name, ctx.server.id)
+    await ctx.send(txt)
+
+
+@bot.command(brief='Set your in-game name')
+async def ign(ctx, *, ign):
+    """Set your in-game name"""
+    txt = HD.insert_ign(ctx.author.id, ctx.server.id, ctx.author.name, ign)
+    await ctx.send(txt)
+
+
+@bot.command(brief='Insert local data')
+async def db_insert_local(ctx, *, txt):
+    """Insert data into the table (restricted to your current Discord)"""
+    txt = HD.insert_local(ctx.author.id, ctx.server.id, ctx.author.name, txt)
+    await ctx.send(txt)
+
+
+@bot.command(brief='Insert global data')
+async def db_insert_global(ctx, *, txt):
+    """Insert data into the table (shared across all Discords)"""
+    txt = HD.insert_local(ctx.author.id, ctx.server.id, ctx.author.name, txt)
     await ctx.send(txt)
 
 
