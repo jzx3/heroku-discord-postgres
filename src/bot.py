@@ -105,7 +105,7 @@ async def db_getrow(ctx):
 
 
 @bot.command(brief='Set your home Discord')
-async def home_discord(ctx, *):
+async def home_discord(ctx):
     """Sets your home discord"""
     txt = HD.set_home_discord(ctx.author.id, ctx.server.id, ctx.author.name, ctx.server.id)
     await ctx.send(txt)
