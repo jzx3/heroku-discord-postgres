@@ -238,7 +238,7 @@ class HerokuDiscordTable(HerokuDB):
 
     def set_home_discord(self, author_id, server_id, author_name):
         sql_query = """INSERT INTO players (discord_id, server_id, discord_name)
-            VALUES (%s, %s, %s) ON CONFLICT (discord_id) DO UPDATE SET server_id = EXCLUDED.server_id"""
+            VALUES (%s, %s, %s) ON CONFLICT (discord_id) DO UPDATE SET server_id = EXCLUDED.server_id;"""
         my_tuple = (author_id, server_id, author_name)
         txt, e = super().commit(sql_query, my_tuple)
         if e is None:
@@ -249,7 +249,7 @@ class HerokuDiscordTable(HerokuDB):
 
     def insert_ign(self, author_id, server_id, author_name, ign):
         sql_query = """INSERT INTO players (discord_id, server_id, discord_name, ign)
-            VALUES (%s, %s, %s, %s) ON CONFLICT (discord_id) DO UPDATE SET ign = EXCLUDED.ign"""
+            VALUES (%s, %s, %s, %s) ON CONFLICT (discord_id) DO UPDATE SET ign = EXCLUDED.ign;"""
         my_tuple = (author_id, server_id, author_name, ign)
         txt, e = super().commit(sql_query, my_tuple)
         if e is None:
@@ -261,7 +261,7 @@ class HerokuDiscordTable(HerokuDB):
     def insert_local(self, author_id, server_id, author_name, txt):
         # To do: local data can only be done on home discord
         sql_query = """INSERT INTO players (discord_id, discord_name, local_data)
-            VALUES (%s, %s, %s) ON CONFLICT (discord_id) DO UPDATE SET local_data = EXCLUDED.local_data"""
+            VALUES (%s, %s, %s) ON CONFLICT (discord_id) DO UPDATE SET local_data = EXCLUDED.local_data;"""
         my_tuple = (author_id, author_name, txt)
         txt, e = super().commit(sql_query, my_tuple)
         if e is None:
@@ -270,9 +270,9 @@ class HerokuDiscordTable(HerokuDB):
             return error_to_text(f'Failed to set local_data = "{local_data}"\n', e)
 
 
-    def insert_global(self, author_id, server_id, author_name, txt):
+    def insert_global(self, author_id, author_name, txt):
         sql_query = """INSERT INTO players (discord_id, discord_name, global_data)
-            VALUES (%s, %s, %s) ON CONFLICT (discord_id) DO UPDATE SET global_data = EXCLUDED.global_data"""
+            VALUES (%s, %s, %s) ON CONFLICT (discord_id) DO UPDATE SET global_data = EXCLUDED.global_data;"""
         my_tuple = (author_id, author_name, txt)
         txt, e = super().commit(sql_query, my_tuple)
         if e is None:

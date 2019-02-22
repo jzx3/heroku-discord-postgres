@@ -169,7 +169,7 @@ async def db_insert_local(ctx, *, txt):
 @bot.command(brief='Insert global data')
 async def db_insert_global(ctx, *, txt):
     """Insert data into the table (shared across all Discords)"""
-    txt = HD.insert_local(ctx.author.id, ctx.server.id, ctx.author.name, txt)
+    txt = HD.insert_global(ctx.author.id, ctx.author.name, txt)
     await ctx.send(txt)
 
 
