@@ -210,8 +210,8 @@ class HerokuDiscordTable(HerokuDB):
 
 
     def drop_column(self, column_name):
-       sql_query = """ALTER TABLE players DROP COLUMN %s;"""
-       txt, e = super().commit(sql_query, (column_name,))
+        sql_query = """ALTER TABLE players DROP COLUMN %s;"""
+        txt, e = super().commit(sql_query, (column_name,))
         if e is None:
             return txt
         else:
