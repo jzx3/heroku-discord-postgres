@@ -30,7 +30,7 @@ bot = commands.Bot(command_prefix=BOT_PREFIX,
 setattr(bot, "logger", logging.getLogger("bot.py"))
 
 print('Connecting to database')
-HD = db.HerokuDB()
+HD = db.HerokuDiscordTable()
 
 
 # ----- Bot Events ------------------------------------------------------------
@@ -72,7 +72,15 @@ async def about(ctx):
     await ctx.send(txt)
 
 
-# ----- Bot Database Commands -------------------------------------------------
+# ----- Bot Database Commands (Admin) -----------------------------------------
+@bot.command(brief='Check table')
+@commands.is_owner()
+async def db_check(ctx):
+    """Check the connection to the database"""
+    txt = HD.check_connection()
+    await ctx.send(txt)
+
+
 @bot.command(brief='Create table')
 @commands.is_owner()
 async def db_create(ctx):
@@ -81,11 +89,27 @@ async def db_create(ctx):
     await ctx.send(txt)
 
 
-@bot.command(brief='Check table')
+@bot.command(brief='Delete table')
 @commands.is_owner()
-async def db_check(ctx):
-    """Check the connection to the database"""
-    txt = HD.check_connection()
+async def db_delete(ctx):
+    """Deletes the table for the database"""
+    txt = HD.drop()
+    await ctx.send(txt)
+
+
+@bot.command(brief='Add column')
+@commands.is_owner()
+async def db_add_column(ctx, column_name, data_type):
+    """Add a column to the table"""
+    txt = HD.add_column(column_name, data_type)
+    await ctx.send(txt)
+
+
+@bot.command(brief='Delete column')
+@commands.is_owner()
+async def db_rm_column(ctx, column_name):
+    """Removes a column from the table"""
+    txt = HD.drop_column(column_name)
     await ctx.send(txt)
 
 
@@ -97,6 +121,23 @@ async def db_read(ctx):
     await ctx.send(txt)
 
 
+@bot.command(brief='Run sql query')
+@commands.is_owner()
+async def sql_commit(ctx, *, sql_query):
+    """Run a custom sql query + commit"""
+    txt = HD.sql_commit(sql_query)
+    await ctx.send(txt)
+
+
+@bot.command(brief='Run sql fetch')
+@commands.is_owner()
+async def sql_fetch(ctx, *, sql_query):
+    """Run a custom sql query + fetch"""
+    txt = HD.sql_fetch(sql_query)
+    await ctx.send(txt)
+
+
+# ----- Bot Database Commands (User) ------------------------------------------
 @bot.command(brief='Read database entry')
 async def db_getrow(ctx):
     """Read a row of the table corresponding to your Discord ID"""
@@ -129,14 +170,6 @@ async def db_insert_local(ctx, *, txt):
 async def db_insert_global(ctx, *, txt):
     """Insert data into the table (shared across all Discords)"""
     txt = HD.insert_local(ctx.author.id, ctx.server.id, ctx.author.name, txt)
-    await ctx.send(txt)
-
-
-@bot.command(brief='Run sql query')
-@commands.is_owner()
-async def sql(ctx, *, cmd):
-    """Run a custom sql query"""
-    txt = HD.sql(cmd)
     await ctx.send(txt)
 
 
