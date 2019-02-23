@@ -25,6 +25,7 @@ class HerokuDB():
     """Class for a Heroku Database"""
 
     def __init__(self, params=None):
+        self._url = None
         if params is None:
             try:
                 self._url = os.environ['DATABASE_URL']
@@ -45,9 +46,9 @@ class HerokuDB():
                     password = params['PASSWORD'],
                     host = params['HOST'],
                     port = params['PORT'],
-                    database = DATABASE)
+                    database = params['DATABASE'])
             except (Exception, psycopg2.Error) as error:
-                print ("Error while connecting to PostgreSQL", error)
+                print("Error while connecting to PostgreSQL", error)
 
 
     def dsn(self):
@@ -68,7 +69,7 @@ class HerokuDB():
             return None, txt, e
 
 
-    def fetchall(self, sql_query):
+    def fetchall(self, sql_query, my_tuple=None):
         try:
             with self._conn.cursor() as c:
                 if my_tuple is None:
