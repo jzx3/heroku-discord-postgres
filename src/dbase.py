@@ -26,84 +26,127 @@ class HerokuDB():
 
     def __init__(self, params=None):
         self._url = None
+        self._lasterr = None
+        self._conn = self.connect(params)
+
+
+    def get_url(self):
+        try:
+            url = os.environ['DATABASE_URL']
+        except:
+            print('DATABASE_URL is not defined')
+            print('Did you attach the Heroku Postgres add-on in your app\'s dashboard?')
+            url = None
+        return url
+
+
+    def connect(self, params=None):
         if params is None:
+            self._url = get_url()
+            if self._url is None:
+                print('Cannot connect without URL')
+                return None
             try:
-                self._url = os.environ['DATABASE_URL']
-            except:
-                print('DATABASE_URL is not defined')
-                print('Did you attach the Heroku Postgres add-on in your app\'s dashboard?')
-                self._conn = None
-                return
-            try:
-                self._conn = psycopg2.connect(self._url, sslmode='require')
-            except:
-                print(f'Failed to connect to Postgres at URL: {self._url}')
-                self._conn = None
+                conn = psycopg2.connect(self._url, sslmode='require')
+            except (Exception, psycopg2.Error) as e:
+                print(f'Failed to connect to PostgreSQL DB at URL: {self._url}')
+                return None
         else:
             try:
-                self._conn = psycopg2.connect(
+                conn = psycopg2.connect(
                     user = params['USER'],
                     password = params['PASSWORD'],
                     host = params['HOST'],
                     port = params['PORT'],
                     database = params['DATABASE'])
-            except (Exception, psycopg2.Error) as error:
-                print("Error while connecting to PostgreSQL", error)
+            except (Exception, psycopg2.Error) as e:
+                print(f"Failed to connect to PostgreSQL DB. Error: {e}")
+                return None
+        return conn
 
 
     def dsn(self):
-        self._dsn = self._conn.get_dsn_parameters()  # [dictionary]
-        return self._dsn
+        return self._conn.get_dsn_parameters()  # [dictionary]
 
 
-    def fetchone(self, sql_query, my_tuple=None):
+    def fetchone(self, sql_query, my_tuple=None, err_msg=None):
         try:
             with self._conn.cursor() as c:
                 if my_tuple is None:
                     c.execute(sql_query)
                 else:
                     c.execute(sql_query, my_tuple)
-                return c.fetchone(), None, None  # [tuple of length 1]
+                rows = c.fetchone()  # [a tuple of length 1]
+                txt = f'Success: execute("{sql_query}", ({my_tuple})); fetchone()'
+                self._lasterr = None
         except psycopg2.Error as e:
-            txt = error_to_text(f'Failed to execute "{sql_query}" followed by fetchone\n', e)
-            return None, txt, e
+            rows = None
+            if err_msg is None:
+                txt = error_to_text(f'Failed to execute "{sql_query}" followed by fetchone\n', e)
+            else:
+                txt = error_to_text(err_msg, e)
+            self._lasterr = e
+        return {'data': rows, 'txt': txt, 'err': self._lasterr}
 
 
-    def fetchall(self, sql_query, my_tuple=None):
+    def fetchall(self, sql_query, my_tuple=None, err_msg=None):
         try:
             with self._conn.cursor() as c:
                 if my_tuple is None:
                     c.execute(sql_query)
                 else:
                     c.execute(sql_query, my_tuple)
-                return c.fetchall(), None, None
+                rows = c.fetchall()
+                txt = f'Success: execute("{sql_query}", ({my_tuple})); fetchall()'
+                self._lasterr = None
         except psycopg2.Error as e:
-            txt = error_to_text(f'Failed to execute "{sql_query}" followed by fetchall\n', e)
-            return None, txt, e
+            rows = None
+            if err_msg is None:
+                txt = error_to_text(f'Failed to execute "{sql_query}" followed by fetchall\n', e)
+            else:
+                txt = error_to_text(err_msg, e)
+            self._lasterr = e
+        return {'data': rows, 'txt': txt, 'err': self._lasterr}
 
 
-    def commit(self, sql_query, my_tuple=None):
+    def commit(self, sql_query, my_tuple=None, err_msg=None):
         try:
             with self._conn.cursor() as c:
-                txt = f'Successful execute+commit of "{sql_query}", {my_tuple}'
                 if my_tuple is None:
                     c.execute(sql_query)
                 else:
                     c.execute(sql_query, my_tuple)
                 self._conn.commit()
-                return txt, None
+                txt = f'Success: execute("{sql_query}", ({my_tuple})); commit()'
+                self._lasterr = None
         except psycopg2.Error as e:
-            txt = error_to_text(f'Failed to execute+commit "{sql_query}", {my_tuple}\n', e)
-            return txt, e
+            if err_msg is None:
+                txt = error_to_text(f'Failed to execute+commit "{sql_query}", {my_tuple}\n', e)
+            else:
+                txt = error_to_text(err_msg, e)
+            self._lasterr = e
+        return {'data': None, 'txt': txt, 'err': self._lasterr}
 
 
-    def version(self):
-        return self.fetchone('SELECT version();')
-
-
-    def rollback(self):
-        txt, e = self.commit('ROLLBACK;')
-        return txt
+    def custom(self, cmd, my_tuple=None, my_params=None):
+        if cmd not in command_dictionary.keys():
+            print('Command not found')
+            return None
+        cmd_type, sql_query, err_msg = command_dictionary[cmd]
+        if my_params is not None:
+            sql_query = sql_query.format(**my_params)
+            err_msg = err_msg.format(**my_params)
+        print(f'conn.cursor.{cmd_type}("{sql_query}", {my_tuple}), err_msg="{err_msg}", my_params={my_params}')
+        if cmd_type == 'fetchone':
+            r = self.fetchone(sql_query, my_tuple, err_msg)
+        elif cmd_type == 'fetchall':
+            r = self.fetchall(sql_query, my_tuple, err_msg)
+        elif cmd_type == 'commit':
+            r = self.commit(sql_query, my_tuple, err_msg)
+        else:
+            print(f'Invalid cmd_type = {cmd_type}')
+            r = None
+        return r
 
 
     def close(self):
@@ -118,12 +161,7 @@ class HerokuDB():
             txt = error_to_text('Failed to close database connection\n', e)
             print('Failed to close connection')
         finally:
-            return txt
-
-
-    @property
-    def url(self):
-        return self._url
+            return txt, self._conn
 
 
     def check_connection(self):
