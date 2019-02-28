@@ -183,48 +183,36 @@ class HerokuDB():
 class HerokuDiscordTable(HerokuDB):
 
     def __init__(self, params=None):
-        super().__init__(params)
+        self._lasterr = None
+        self._url = None
+        self._conn = super().connect(params)
+        if params is None:
+            self._url = super()._url
 
 
     def dsn(self):
-        super().dsn()
+        return super().dsn()
 
 
-    def fetchone(self, sql_query):
-        super().fetchone(sql_query)
+    def fetchone(self, sql_query, my_tuple=None, err_msg=None):
+        return super().fetchone(sql_query, my_tuple, err_msg)
 
 
-    def fetchall(self, sql_query):
-        super().fetchall(sql_query)
+    def fetchall(self, sql_query, my_tuple=None, err_msg=None):
+        return super().fetchall(sql_query, my_tuple, err_msg)
 
 
-    def commit(self, sql_query):
-        super().commit(sql_query)
+    def commit(self, sql_query, my_tuple=None, err_msg=None):
+        return super().commit(sql_query, my_tuple, err_msg)
 
 
-    def commit_tuple(self, sql_query, my_tuple):
-        super().commit_tuple(sql_query, my_tuple)
-
-
-    def version(self):
-        super().version()
-
-
-    def rollback(self):
-        super().rollback()
+    def custom(self, cmd, my_tuple=None, my_params=None):
+        return super().custom(cmd, my_tuple, my_params)
 
 
     def close(self):
-        super().close()
-
-
-    def create(self):
-        sql_query = """CREATE TABLE players (discord_id TEXT PRIMARY KEY, server_id TEXT, discord_name TEXT, ign TEXT, local_data TEXT, global_data TEXT);"""
-        txt, e = super().commit(sql_query)
-        if e is None:
-            return txt
-        else:
-            return error_to_text('Failed to create table\n', e)
+        txt, self._conn = super().close()
+        return txt
 
 
     def drop(self):
